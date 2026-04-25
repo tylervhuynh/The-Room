@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Social Physics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -21,7 +22,6 @@
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;overflow-x:hidden}
 #app{display:flex;flex-direction:column;min-height:100vh}
 
-/* HEADER */
 .header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .logo{font-family:var(--font-serif);font-size:22px;color:var(--text);letter-spacing:-0.5px}
 .logo em{color:var(--accent);font-style:italic}
@@ -33,16 +33,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-si
 .btn-start:hover{background:var(--accent2);transform:translateY(-1px)}
 .btn-start:active{transform:translateY(0)}
 
-/* MAIN LAYOUT */
 .main{display:grid;grid-template-columns:280px 1fr 260px;gap:0;flex:1;overflow:hidden}
 
-/* LEFT PANEL */
 .panel-left{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .panel-right{border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .panel-section{padding:16px;border-bottom:1px solid var(--border)}
 .panel-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
 
-/* GLOBAL BELIEF */
 .global-belief{text-align:center;padding:20px 16px}
 .belief-number{font-family:var(--font-serif);font-size:64px;line-height:1;color:var(--text);margin-bottom:4px}
 .belief-label{font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
@@ -51,26 +48,21 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-si
 .mood-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border2)}
 .mood-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-/* CHART */
 .chart-wrap{padding:12px 16px 16px}
 canvas{width:100%;height:100px;border-radius:8px;background:var(--surface2);display:block}
 
-/* DEBATE BTN */
 .btn-debate{margin:0 16px 16px;width:calc(100% - 32px);background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);padding:10px;font-size:13px;font-family:var(--font-body);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-debate:hover{border-color:var(--accent);color:var(--accent)}
 .btn-debate svg{width:14px;height:14px;flex-shrink:0}
 
-/* CENTER - AGENTS */
 .center-panel{display:flex;flex-direction:column;overflow:hidden}
 .agents-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .agents-header h2{font-family:var(--font-serif);font-size:18px;font-weight:400}
 .turn-badge{background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:3px 12px;font-size:12px;color:var(--text2)}
 .agents-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px;overflow-y:auto;flex:1}
 
-/* AGENT CARD */
 .agent-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;position:relative;overflow:hidden;transition:border-color .3s}
 .agent-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--agent-color);border-radius:3px 0 0 3px}
-.agent-card.targeted{border-color:var(--agent-color)}
 .agent-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .agent-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.2}
 .agent-role{font-size:11px;color:var(--text3);margin-top:2px}
@@ -83,7 +75,6 @@ canvas{width:100%;height:100px;border-radius:8px;background:var(--surface2);disp
 .agent-belief-pct{color:var(--text2);font-weight:500}
 .agent-quote{margin-top:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.4;font-style:italic;min-height:44px;border-left:2px solid var(--agent-color)}
 
-/* RIGHT - INTERVENTION */
 .intervention-panel{padding:16px}
 .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:12px;background:var(--surface2);border-radius:var(--radius);padding:3px}
 .tab{background:transparent;border:none;border-radius:7px;color:var(--text3);padding:7px 4px;font-size:12px;font-family:var(--font-body);font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
@@ -99,7 +90,6 @@ textarea.input::placeholder{color:var(--text3)}
 .hint-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text3);line-height:1.5}
 .hint-icon{font-size:16px;margin-bottom:4px}
 
-/* LOG */
 .log-panel{display:flex;flex-direction:column;overflow:hidden}
 .log-header{padding:14px 20px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
 .log-scroll{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
@@ -115,21 +105,12 @@ textarea.input::placeholder{color:var(--text3)}
 .log-quote-name{font-size:10px;font-weight:600;color:var(--text3);display:flex;justify-content:space-between}
 .log-quote-delta{font-size:10px;font-weight:700}
 .log-quote-text{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.35;font-style:italic}
-
-/* SYSTEM MSG */
 .log-system{background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text3);text-align:center}
 
-/* SCROLL */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
-/* EMPTY STATE */
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:8px;padding:32px}
-.empty-state-icon{font-size:32px;opacity:.3}
-.empty-state-text{font-size:13px;text-align:center}
-
-/* REASONING */
 .reasoning-entry{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px}
 .reasoning-name{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px}
 .reasoning-text{font-size:11px;color:var(--text3);line-height:1.45}
@@ -151,7 +132,6 @@ textarea.input::placeholder{color:var(--text3)}
     </form>
   </header>
   <div class="main">
-    <!-- LEFT -->
     <aside class="panel-left">
       <div class="global-belief">
         <div class="belief-number" id="globalNum">—</div>
@@ -176,7 +156,6 @@ textarea.input::placeholder{color:var(--text3)}
       </div>
     </aside>
 
-    <!-- CENTER -->
     <div class="center-panel">
       <div class="agents-header">
         <h2>The Room</h2>
@@ -189,7 +168,6 @@ textarea.input::placeholder{color:var(--text3)}
       </div>
     </div>
 
-    <!-- RIGHT -->
     <aside class="panel-right">
       <div class="intervention-panel">
         <div class="panel-label" style="margin-bottom:10px">You — the 5th force</div>
@@ -267,17 +245,17 @@ const PLACEHOLDERS = {
   persuasion:"A cautious policy can protect people without freezing progress."
 };
 
-const clamp = (v,lo=0,hi=100) => Math.max(lo,Math.min(hi,v));
-const rnd = v => Math.round(v);
-const pick = (arr,i) => arr[Math.abs(i)%arr.length];
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const clamp=(v,lo=0,hi=100)=>Math.max(lo,Math.min(hi,v));
+const rnd=v=>Math.round(v);
+const pick=(arr,i)=>arr[Math.abs(i)%arr.length];
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-let state = {session:null, kind:'argument'};
+let state={session:null,kind:'argument'};
 
 function scoreText(text){
-  const low = text.toLowerCase();
-  const s = Object.fromEntries(Object.keys(DIMS).map(k=>[k,0]));
-  for(const[dim,words] of Object.entries(DIMS)) for(const w of words) if(low.includes(w)) s[dim]++;
+  const low=text.toLowerCase();
+  const s=Object.fromEntries(Object.keys(DIMS).map(k=>[k,0]));
+  for(const[dim,words]of Object.entries(DIMS))for(const w of words)if(low.includes(w))s[dim]++;
   if(!Object.values(s).some(Boolean)){s.evidence=.55;s.rights=.55;}
   return s;
 }
@@ -286,12 +264,12 @@ function textTilt(text){
   const low=text.toLowerCase();
   const neg=["ban","danger","threat","collapse","fear","crisis","scandal","backlash","fraud","violence"];
   const pos=["equal","benefit","safe","progress","opportunity","protect","improve","breakthrough","support"];
-  return clamp(.5+(pos.filter(w=>low.includes(w)).length - neg.filter(w=>low.includes(w)).length)*.13,.18,.82);
+  return clamp(.5+(pos.filter(w=>low.includes(w)).length-neg.filter(w=>low.includes(w)).length)*.13,.18,.82);
 }
 
 function makeSession(topic){
   const seed=topic.split('').reduce((s,c)=>s+c.charCodeAt(0),0);
-  const agents = AGENTS.map((bp,i)=>{
+  const agents=AGENTS.map((bp,i)=>{
     const drift=((seed+i*17)%13)-6;
     return{...bp,belief:clamp(bp.base+drift),resistance:bp.id==='traditionalist'?64:bp.id==='authority'?52:38,lastDelta:0,quote:'Initial position formed from role incentives.',reasoning:'Waiting for the first intervention.'};
   });
@@ -340,10 +318,10 @@ function runTurn(session,action){
   session.globalBelief=avg(session.agents);
   const spread=Math.max(...session.agents.map(a=>a.belief))-Math.min(...session.agents.map(a=>a.belief));
   const intensity=Math.abs(session.globalBelief-before);
-  if(spread>26) session.mood='polarized';
-  else if(intensity>16) session.mood='charged';
-  else if(session.globalBelief>62) session.mood='receptive';
-  else if(session.globalBelief<38) session.mood='defensive';
+  if(spread>26)session.mood='polarized';
+  else if(intensity>16)session.mood='charged';
+  else if(session.globalBelief>62)session.mood='receptive';
+  else if(session.globalBelief<38)session.mood='defensive';
   else session.mood='open';
 
   const gDelta=session.globalBelief-before;
@@ -365,7 +343,7 @@ const MOOD_COLORS={polarized:'#e8503a',charged:'#d4a843',receptive:'#5fa86b',def
 
 function render(){
   const s=state.session;
-  if(!s) return;
+  if(!s)return;
   document.getElementById('globalNum').textContent=s.globalBelief+'%';
   document.getElementById('globalMeter').style.width=s.globalBelief+'%';
   document.getElementById('moodDot').style.background=MOOD_COLORS[s.mood]||'#888';
@@ -379,9 +357,8 @@ function render(){
 }
 
 function renderAgents(s){
-  const grid=document.getElementById('agentsGrid');
-  grid.innerHTML=s.agents.map(a=>`
-    <div class="agent-card" style="--agent-color:${a.color}${s.log[0]?.targetId===a.id?' targeted':''}">
+  document.getElementById('agentsGrid').innerHTML=s.agents.map(a=>`
+    <div class="agent-card" style="--agent-color:${a.color}">
       <div class="agent-top">
         <div><div class="agent-name">${esc(a.name)}</div><div class="agent-role">${esc(a.role)}</div></div>
         <div class="agent-delta ${a.lastDelta>0?'pos':a.lastDelta<0?'neg':''}">${a.lastDelta>0?'+':''}${a.lastDelta}</div>
@@ -394,15 +371,14 @@ function renderAgents(s){
 }
 
 function renderLog(s){
-  const scroll=document.getElementById('logScroll');
-  scroll.innerHTML=s.log.map(e=>{
-    if(e.type==='system') return `<div class="log-system">${esc(e.body)}</div>`;
+  document.getElementById('logScroll').innerHTML=s.log.map(e=>{
+    if(e.type==='system')return`<div class="log-system">${esc(e.body)}</div>`;
     const resHtml=e.responses?`<div class="log-responses">${e.responses.map(r=>`
       <div class="log-quote" style="--qcolor:${r.color}">
         <div class="log-quote-name"><span>${esc(r.name)}</span><span class="log-quote-delta" style="color:${r.delta>0?'#5fa86b':'#e8503a'}">${r.delta>0?'+':''}${r.delta}</span></div>
         <div class="log-quote-text">${esc(r.line)}</div>
       </div>`).join('')}</div>`:'';
-    return `<div class="log-entry">
+    return`<div class="log-entry">
       <div class="log-entry-head"><span class="log-entry-title">${esc(e.title)}</span><span class="log-entry-turn">T${e.turn}</span></div>
       <div class="log-body">${esc(e.body)}</div>
       ${e.worldReact?`<div class="log-world">${esc(e.worldReact)}</div>`:''}
@@ -412,8 +388,7 @@ function renderLog(s){
 }
 
 function renderReasoning(s){
-  const box=document.getElementById('reasoningBox');
-  box.innerHTML=s.agents.map(a=>`
+  document.getElementById('reasoningBox').innerHTML=s.agents.map(a=>`
     <div class="reasoning-entry">
       <div class="reasoning-name" style="color:${a.color}">${esc(a.name)}</div>
       <div class="reasoning-text">${esc(a.reasoning)}</div>
@@ -426,10 +401,9 @@ function drawChart(history,agents){
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#1e1e22';ctx.fillRect(0,0,W,H);
-  if(history.length<2){return;}
-  // Agent lines
+  if(history.length<2)return;
   const agentIds=['activist','traditionalist','observer','authority'];
-  const agentColors={'activist':'#e8503a','traditionalist':'#c4894a','observer':'#4a8fd4','authority':'#5fa86b'};
+  const agentColors={activist:'#e8503a',traditionalist:'#c4894a',observer:'#4a8fd4',authority:'#5fa86b'};
   for(const id of agentIds){
     ctx.strokeStyle=agentColors[id]+'66';ctx.lineWidth=1;ctx.beginPath();
     history.forEach((pt,i)=>{
@@ -439,7 +413,6 @@ function drawChart(history,agents){
     });
     ctx.stroke();
   }
-  // Global line
   ctx.strokeStyle='#e8503a';ctx.lineWidth=2.5;ctx.beginPath();
   history.forEach((pt,i)=>{
     const x=8+(i/(history.length-1))*(W-16);
@@ -447,7 +420,6 @@ function drawChart(history,agents){
     i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
   ctx.stroke();
-  // Last point dot
   const last=history[history.length-1];
   const lx=W-8,ly=H-6-(last.gb/100)*(H-12);
   ctx.fillStyle='#e8503a';ctx.beginPath();ctx.arc(lx,ly,3,0,Math.PI*2);ctx.fill();
@@ -460,7 +432,7 @@ function startSim(topic){
 
 function doIntervene(){
   const text=document.getElementById('inputText').value.trim();
-  if(!text||!state.session) return;
+  if(!text||!state.session)return;
   const targetId=state.kind==='persuasion'?document.getElementById('targetSelect').value:null;
   state.session=runTurn(state.session,{kind:state.kind,text,targetId:targetId||null});
   document.getElementById('inputText').value='';
@@ -468,12 +440,11 @@ function doIntervene(){
 }
 
 function doStep(){
-  if(!state.session) return;
+  if(!state.session)return;
   state.session=debateStep(state.session);
   render();
 }
 
-// Event listeners
 document.getElementById('topicForm').addEventListener('submit',e=>{
   e.preventDefault();
   startSim(document.getElementById('topicInput').value.trim());
@@ -481,12 +452,11 @@ document.getElementById('topicForm').addEventListener('submit',e=>{
 document.getElementById('sendBtn').addEventListener('click',doIntervene);
 document.getElementById('stepBtn').addEventListener('click',doStep);
 document.getElementById('inputText').addEventListener('keydown',e=>{
-  if((e.metaKey||e.ctrlKey)&&e.key==='Enter') doIntervene();
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter')doIntervene();
 });
-
 document.getElementById('tabs').addEventListener('click',e=>{
   const btn=e.target.closest('.tab');
-  if(!btn) return;
+  if(!btn)return;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   state.kind=btn.dataset.kind;
@@ -495,13 +465,11 @@ document.getElementById('tabs').addEventListener('click',e=>{
   const h=HINTS[state.kind];
   document.getElementById('hintBox').innerHTML=`<div class="hint-icon">${h.icon}</div>${h.text}`;
   document.getElementById('inputText').placeholder=PLACEHOLDERS[state.kind];
-  // Populate target select
   if(state.kind==='persuasion'&&state.session){
     sel.innerHTML=state.session.agents.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
   }
 });
 
-// Init
 startSim('AI regulation');
 </script>
 </body>
