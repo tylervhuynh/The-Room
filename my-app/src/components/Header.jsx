@@ -1,35 +1,35 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
-export default function Header({ onStart }) {
-  const [topic, setTopic] = useState()
-  const [current, setCurrent] = useState(null)
-  const inputRef = useRef();
+export default function Header({ onStart, topic, busy }) {
+  const [value, setValue] = useState(topic || 'AI regulation')
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    onStart(topic.trim())
-    setCurrent(topic.trim())
+  useEffect(() => {
+    setValue(topic || 'AI regulation')
+  }, [topic])
 
-    // reset form
-    setTopic("")
-    inputRef.current.blur();
+  function handleSubmit(event) {
+    event.preventDefault()
+    onStart(value.trim() || 'AI regulation')
   }
 
   return (
     <header className="header">
       <div className="logo">
         <div className="logo-mark">The Room</div>
-        {current != null && <div className="logo-sub">Currently debating: {current}</div>}
+        <div className="logo-sub">currently debating: {topic || 'AI regulation'}</div>
       </div>
       <form className="topic-form" onSubmit={handleSubmit}>
         <input
           maxLength={80}
-          value={topic}
-          onChange={e => setTopic(e.target.value)}
-          placeholder="Topic to debate?"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder="What idea should enter the room?"
           autoComplete="off"
+          disabled={busy}
         />
-        <button type="submit" className="btn-start">Enter the room</button>
+        <button type="submit" className="btn-start" disabled={busy}>
+          {busy ? 'Loading…' : 'Open the room'}
+        </button>
       </form>
     </header>
   )

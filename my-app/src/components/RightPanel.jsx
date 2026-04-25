@@ -1,49 +1,60 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { HINTS, PLACEHOLDERS } from '../gameLogic'
 
-export default function RightPanel({ session, onIntervene }) {
+export default function RightPanel({ session, onIntervene, busy, error }) {
   const [kind, setKind] = useState('argument')
   const [text, setText] = useState('')
   const [targetId, setTargetId] = useState('')
 
-  function handleSend() {
-    if (!text.trim() || !session) return
-    onIntervene({ kind, text: text.trim(), targetId: kind === 'persuasion' ? targetId : null })
-    setText('')
-  }
-
-  function handleKeyDown(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSend()
-  }
+  useEffect(() => {
+    if (!session?.agents?.some((agent) => agent.id === targetId)) {
+      setTargetId(session?.agents?.[0]?.id || '')
+    }
+  }, [session, targetId])
 
   const hint = HINTS[kind]
 
+  function handleSend() {
+    if (!text.trim() || !session || busy) return
+    onIntervene({
+      kind,
+      text: text.trim(),
+      targetId: kind === 'persuasion' ? targetId || session.agents?.[0]?.id || null : null,
+    })
+    setText('')
+  }
+
+  function handleKeyDown(event) {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') handleSend()
+  }
+
   return (
     <aside className="panel-right">
-      <div className="discussion-panel">
+      <div className="intervention-panel">
         <div className="panel-label" style={{ marginBottom: 10 }}>You enter as the fifth voice</div>
 
         <div className="tabs">
-          {['argument', 'event', 'persuasion'].map(k => (
+          {['argument', 'event', 'persuasion'].map((value) => (
             <button
-              key={k}
-              className={`tab${kind === k ? ' active' : ''}`}
-              onClick={() => setKind(k)}
+              key={value}
+              className={`tab${kind === value ? ' active' : ''}`}
+              onClick={() => setKind(value)}
+              disabled={busy}
             >
-              {k.charAt(0).toUpperCase() + k.slice(1)}
+              {value.charAt(0).toUpperCase() + value.slice(1)}
             </button>
           ))}
         </div>
 
         {kind === 'persuasion' && session && (
           <select
-            className="target-select"
+            className="target-select show"
             value={targetId}
-            onChange={e => setTargetId(e.target.value)}
+            onChange={(event) => setTargetId(event.target.value)}
+            disabled={busy}
           >
-            <option value="">Select target…</option>
-            {session.agents.map(a => (
-              <option key={a.id} value={a.id}>{a.name}</option>
+            {session.agents.map((agent) => (
+              <option key={agent.id} value={agent.id}>{agent.name}</option>
             ))}
           </select>
         )}
@@ -53,25 +64,24 @@ export default function RightPanel({ session, onIntervene }) {
           rows={5}
           placeholder={PLACEHOLDERS[kind]}
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={busy}
         />
 
         <button
           className="btn-send"
-          disabled={!session || !text.trim()}
+          disabled={!session || !text.trim() || busy}
           onClick={handleSend}
         >
-          Send into the room
+          {busy ? 'Sending…' : 'Send into the room'}
         </button>
 
         <div className="hint-box">
-          <div className="hint-icon">{hint.icon}</div>
-          {hint.text}
+          <div className="hint-icon">{error ? '!' : hint.icon}</div>
+          {error || hint.text}
         </div>
       </div>
-
-      <div className="current-idea-box"></div>
     </aside>
   )
 }
