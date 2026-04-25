@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Social Physics</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Social Physics Game</p>
+          <h1>Intervene in a living belief system.</h1>
+        </div>
+        <form id="topic-form" class="topic-form">
+          <input id="topic-input" maxlength="80" autocomplete="off" value="AI regulation" aria-label="Simulation topic">
+          <button type="submit">Start</button>
+        </form>
+      </section>
+
+      <section class="board">
+        <aside class="panel world-panel">
+          <div class="panel-head">
+            <span>World Belief</span>
+            <strong id="global-value">0%</strong>
+          </div>
+          <div class="meter large"><span id="global-meter"></span></div>
+          <div class="world-state">
+            <span id="mood-dot"></span>
+            <span id="mood-label">initializing</span>
+          </div>
+          <canvas id="history" width="520" height="160" aria-label="Belief history chart"></canvas>
+          <button id="step-button" class="ghost" type="button">Let agents debate</button>
+        </aside>
+
+        <section class="panel agents-panel">
+          <div class="panel-head">
+            <span>4 Agents</span>
+            <strong id="turn-value">Turn 0</strong>
+          </div>
+          <div id="agents" class="agents"></div>
+        </section>
+
+        <section class="panel intervention-panel">
+          <div class="panel-head">
+            <span>5th Force</span>
+            <strong>You</strong>
+          </div>
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-kind="argument" type="button">Argument</button>
+            <button class="tab" data-kind="event" type="button">Event</button>
+            <button class="tab" data-kind="persuasion" type="button">Persuade</button>
+          </div>
+          <select id="target-select" class="hidden" aria-label="Persuasion target"></select>
+          <textarea id="input-text" rows="5" placeholder="What if open rules create more trust than bans?"></textarea>
+          <button id="send-button" type="button">Apply force</button>
+          <p id="hint">Your argument becomes a new social force with its own influence weight.</p>
+        </section>
+      </section>
+
+      <section class="lower">
+        <section class="panel log-panel">
+          <div class="panel-head">
+            <span>Debate</span>
+            <strong>Live reactions</strong>
+          </div>
+          <div id="log" class="log"></div>
+        </section>
+        <section class="panel reasoning-panel">
+          <div class="panel-head">
+            <span>Why It Changed</span>
+            <strong>Dynamics</strong>
+          </div>
+          <div id="reasoning" class="reasoning"></div>
+        </section>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

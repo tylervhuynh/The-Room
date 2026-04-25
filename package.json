@@ -1,0 +1,13 @@
+{
+  "name": "social-physics-sim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A 4-agent social simulation where users intervene in belief formation.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
