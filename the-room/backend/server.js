@@ -768,3 +768,6 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log(`The Room running at http://localhost:${PORT}`);
 });
+
+// Export the handler for Vercel serverless
+module.exports = server;
