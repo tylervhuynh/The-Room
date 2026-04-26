@@ -95,39 +95,6 @@ const agentBlueprints = [
   }
 ];
 
-const dimensions = {
-  evidence: ["study", "data", "proof", "research", "expert", "science", "scientific", "measurable", "record"],
-  rights: ["equal", "fair", "rights", "justice", "dignity", "freedom", "harm", "voice", "workforce"],
-  stability: ["risk", "cost", "tradition", "family", "jobs", "order", "stability", "security", "disruption"],
-  authority: ["law", "court", "government", "official", "policy", "institution", "leader", "regulation"],
-  popularity: ["viral", "protest", "movement", "public", "media", "crowd", "election", "majority"]
-};
-
-function scoreText(text) {
-  const lower = text.toLowerCase();
-  const scores = Object.fromEntries(Object.keys(dimensions).map((key) => [key, 0]));
-  for (const [dimension, words] of Object.entries(dimensions)) {
-    for (const word of words) {
-      if (lower.includes(word)) scores[dimension] += 1;
-    }
-  }
-  if (!Object.values(scores).some(Boolean)) {
-    scores.evidence = 0.55;
-    scores.rights = 0.55;
-  }
-  return scores;
-}
-
-function textTilt(text) {
-  const lower = text.toLowerCase();
-  const negative = ["ban", "danger", "threat", "collapse", "fear", "crisis", "scandal", "backlash", "fraud", "violence"];
-  const positive = ["equal", "benefit", "safe", "progress", "opportunity", "protect", "improve", "breakthrough", "support"];
-  const neg = negative.filter((word) => lower.includes(word)).length;
-  const pos = positive.filter((word) => lower.includes(word)).length;
-  return clamp(0.5 + (pos - neg) * 0.13, 0.18, 0.82);
-}
-
-
 function makeAiState({ provider, error = null }) {
   return {
     provider,
@@ -288,52 +255,6 @@ function updateMood(session, intensity, polarization) {
   else session.mood = "open";
 }
 
-function applyInfluence(agent, scores, tilt, weight, mode, targetId) {
-  const trust = Object.entries(scores).reduce((sum, [dimension, score]) => sum + score * agent.trust[dimension], 0);
-  const scoreTotal = Object.values(scores).reduce((sum, score) => sum + score, 0) || 1;
-  const normalizedTrust = trust / scoreTotal;
-  const direction = (tilt - 0.5) * 2;
-  const targetBoost = targetId === agent.id ? 1.7 : 1;
-  const modeBoost = mode === "event" ? 1.25 : mode === "persuasion" ? 1.45 : 1;
-  const resistanceDrag = 1 - agent.resistance / 160;
-  const delta = direction * weight * normalizedTrust * agent.volatility * targetBoost * modeBoost * resistanceDrag;
-  const identitySnapback = Math.abs(delta) > 8 ? Math.sign(delta) * -agent.resistance * 0.025 : 0;
-  return delta + identitySnapback;
-}
-
-function explainReason(agent, scores, delta, kind, targetId) {
-  const strongest = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
-  const leaning = delta > 2 ? "moved toward support" : delta < -2 ? "resisted and moved away" : "barely moved";
-  const target = targetId === agent.id ? " Direct attention amplified the update." : "";
-  const mechanism = kind === "event"
-    ? "Events hit harder than arguments."
-    : kind === "debate"
-      ? "Ambient debate shifts positions through accumulated pressure."
-      : "Arguments update through credibility and identity.";
-  return `${agent.name} ${leaning} because the ${strongest} signal matched their trust profile at ${Math.round(agent.trust[strongest] * 100)}%. ${mechanism}${target}`;
-}
-
-function worldReaction(session, action, spread, globalDelta) {
-  const subject = action.kind === "debate"
-    ? "The room debate"
-    : action.kind === "event"
-      ? "Your event"
-      : action.kind === "persuasion"
-        ? "Your targeted persuasion"
-        : "Your argument";
-  const direction = globalDelta > 0 ? "raised" : globalDelta < 0 ? "lowered" : "held";
-  const texture = session.mood === "polarized"
-    ? "The room polarized: agents updated in different directions and resistance rose."
-    : session.mood === "charged"
-      ? "The room became charged: the latest pressure created visible movement and some defensiveness."
-      : session.mood === "receptive"
-        ? "The room became more receptive: agents are treating change as legitimate."
-        : session.mood === "defensive"
-          ? "The room became defensive: the intervention increased caution."
-          : "The room stayed open: beliefs shifted without hardening much.";
-  return `${subject} ${direction} global belief by ${Math.abs(globalDelta)} points. ${texture} Current belief spread is ${round(spread)} points.`;
-}
-
 function extractJsonObject(text) {
   // K2-Think emits chain-of-thought prose (sometimes including example JSON
   // snippets with "..." placeholders) before the real answer. The real JSON
@@ -382,28 +303,6 @@ function extractJsonObject(text) {
 
   console.error("[K2Think] extractJsonObject: no valid JSON object found. Raw (first 400 chars):", text.slice(0, 400));
   throw new Error("K2 Think did not return JSON.");
-}
-
-function normalizeNarrativeResponse(payload, fallback) {
-  const generatedAgents = new Map(
-    Array.isArray(payload.agents)
-      ? payload.agents.map((agent) => [agent.id, agent])
-      : []
-  );
-
-  return {
-    worldReact: (payload.worldReact || "").trim() || fallback.worldReact,
-    agents: fallback.agents.map((agent) => {
-      const generated = generatedAgents.get(agent.id) || {};
-      const line = (generated.line || "").trim().replace(/^"+|"+$/g, "").slice(0, 200);
-      const reasoning = (generated.reasoning || "").trim().replace(/^"+|"+$/g, "").slice(0, 300);
-      return {
-        id: agent.id,
-        line: line || agent.line,
-        reasoning: reasoning || agent.reasoning
-      };
-    })
-  };
 }
 
 async function callK2Think(messages, attempt = 1) {
@@ -477,14 +376,18 @@ async function callK2Think(messages, attempt = 1) {
       res.on("end", () => {
         // drain any remaining buffer
         if (buffer.trim().startsWith("data:")) {
-          const data = buffer.trim().slice(5).trim();
-          if (data && data !== "[DONE]") {
+                const lines = buffer.split("\n");
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) continue;
+            const data = trimmed.slice(5).trim();
+            if (!data || data === "[DONE]") continue;
             try {
               const payload = JSON.parse(data);
               output += payload?.choices?.[0]?.delta?.content
-                     || payload?.choices?.[0]?.message?.content
-                     || payload?.choices?.[0]?.text
-                     || "";
+                    || payload?.choices?.[0]?.message?.content
+                    || payload?.choices?.[0]?.text
+                    || "";
             } catch { /* ignore */ }
           }
         }
@@ -505,40 +408,27 @@ async function callK2Think(messages, attempt = 1) {
   });
 }
 
-async function generateNarrative(session, action, responses, fallbackWorldReact, globalDelta, spread) {
-  const fallback = {
-    worldReact: fallbackWorldReact,
-    agents: responses.map((response) => ({
-      id: response.id,
-      // Use the agent's last known quote from session state as the fallback line
-      line: session.agents.find((a) => a.id === response.id)?.quote || "…",
-      reasoning: response.reasoning
-    }))
-  };
-
-  if (!K2_API_KEY) {
-    return {
-      ...fallback,
-      ai: makeAiState({ provider: "fallback", error: K2_CONFIG_HINT })
-    };
-  }
+async function runTurn(session, action) {
+  session.turn += 1;
+  const before = session.globalBelief;
 
   const messages = [
     {
       role: "system",
       content: [
-        "You are the narrator of The Room — a belief simulation where four archetypal voices react to events.",
-        "Think carefully about how each agent's personality, current belief level, and resistance would shape their reaction to the specific action and topic.",
-        "After reasoning, return ONLY a strict JSON object — no markdown, no code fences, no extra text outside the JSON.",
-        "Schema: {\"worldReact\":\"string\",\"agents\":[{\"id\":\"string\",\"line\":\"string\",\"reasoning\":\"string\"}]}",
-        "Rules:",
-        "worldReact is one vivid sentence describing the room's overall atmospheric shift — what it feels like in the room right now.",
-        "Each agent 'line' is one in-character sentence — their authentic voice reacting to THIS specific action on THIS specific topic.",
-        "Lines must be specific and grounded in the actual content of the topic and action, not generic platitudes.",
-        "Each 'reasoning' is one sentence explaining the internal psychological mechanism driving their movement.",
-        "Agent belief is 0-100 (support level). High resistance means they update slowly. Delta shows how much they just moved.",
-        "A positive delta means they moved toward support; negative means they pulled back.",
-        "Never invent new agent IDs. Return exactly the agents provided."
+        "You are the simulation engine for The Room — a belief dynamics model.",
+        "Given a topic, an action, and four agents with psychological profiles, compute belief updates using rigorous simulation logic.",
+        "Consider: argument framing, each agent's trust weights across dimensions (evidence/rights/stability/authority/popularity), volatility, resistance, and identity snap-back.",
+        "Dimension scoring: analyze the action text and score how strongly it invokes each dimension (0.0-2.0).",
+        "Delta formula: direction × weight × normalizedTrust × volatility × targetBoost × modeBoost × resistanceDrag + identitySnapback.",
+        "Clamp all belief values to 0-100. Round deltas to integers.",
+        "Resistance increases by 5 if |delta| > 6, otherwise decreases by 2. Clamp resistance to 18-86.",
+        "If speakerId matches agent id, belief nudges ±0.4 toward their pole (reinforcement), resistance drops by 1.",
+        "After computing, write one vivid in-character quote per agent reacting to the action.",
+        "Reasoning must also be plain English — one sentence explaining what psychologically drove the movement, written like a perceptive observer describing a person, not a formula readout.",
+        "worldReact must read like a novelist describing the atmosphere in the room — one sentence, vivid and specific, not a summary of the numbers.",
+        "Return ONLY strict JSON, no markdown, no code fences.",
+        "Schema: {\"worldReact\":\"string\",\"dimensionScores\":{\"evidence\":number,\"rights\":number,\"stability\":number,\"authority\":number,\"popularity\":number},\"tilt\":number,\"agents\":[{\"id\":\"string\",\"belief\":number,\"delta\":number,\"resistance\":number,\"line\":\"string\",\"reasoning\":\"string\"}]}"
       ].join(" ")
     },
     {
@@ -546,178 +436,153 @@ async function generateNarrative(session, action, responses, fallbackWorldReact,
       content: JSON.stringify({
         topic: session.topic,
         turn: session.turn,
+        mood: session.mood,
+        globalBelief: round(session.globalBelief),
         action: {
           kind: action.kind,
           text: action.text,
-          targetId: action.targetId || null
+          targetId: action.targetId || null,
+          speakerId: action.speakerId || null,
+          weight: action.kind === "argument" ? 12 : action.kind === "event" ? 16 : 10
         },
-        room: {
-          mood: session.mood,
-          globalBelief: round(session.globalBelief),
-          globalDelta: round(globalDelta),
-          spread: round(spread)
-        },
-        agents: responses.map((response) => ({
-          id: response.id,
-          name: response.name,
-          role: response.role,
-          belief: response.belief,
-          resistance: response.resistance,
-          delta: response.delta
+        agents: session.agents.map(a => ({
+          id: a.id,
+          name: a.name,
+          role: a.role,
+          belief: round(a.belief),
+          resistance: round(a.resistance),
+          volatility: a.volatility,
+          trust: a.trust
         }))
       })
     }
   ];
 
-  try {
-    const raw = await callK2Think(messages);
-    const parsed = JSON.parse(extractJsonObject(raw));
-    const normalized = normalizeNarrativeResponse(parsed, fallback);
-    return {
-      ...normalized,
-      ai: makeAiState({ provider: "k2think" })
-    };
-  } catch (error) {
-    console.error("[K2Think] generateNarrative failed:", error.message);
-    return {
-      ...fallback,
-      ai: makeAiState({ provider: "fallback", error: error.message })
-    };
-  }
-}
+  let responses = [];
 
-async function runTurn(session, action) {
-  session.turn += 1;
-  const scores = scoreText(action.text);
-  const tilt = action.kind === "event" ? clamp(textTilt(action.text) + 0.04, 0.12, 0.88) : textTilt(action.text);
-  const weight = action.kind === "argument" ? 12 : action.kind === "event" ? 16 : 10;
-  const before = session.globalBelief;
-  const responses = [];
+  if (K2_API_KEY) {
+    try {
+      const raw = await callK2Think(messages);
+      const parsed = JSON.parse(extractJsonObject(raw));
 
-  session.agents = session.agents.map((agent, index) => {
-    if(action.speakerId === agent.id) {
-      const newBelief = clamp(agent.belief + (agent.belief > 50 ? .4 : -.4));
-      const changed = round(newBelief - agent.belief);
-      const nextResistance = clamp(agent.resistance - 1, 18, 86);
+      session.agents = session.agents.map(agent => {
+        const gen = (parsed.agents || []).find(a => a.id === agent.id) || {};
+        const newBelief = clamp(gen.belief ?? agent.belief);
+        const delta = gen.delta ?? 0;
+        const resistance = clamp(gen.resistance ?? agent.resistance, 18, 86);
 
-      responses.push({
-        id:         agent.id,
-        name:       agent.name,
-        role:       agent.role,
-        color:      agent.color,
-        delta:      changed,
-        belief:     round(newBelief),
-        resistance: nextResistance,
-        reasoning:  `${agent.name} stated their position, reinforcing their own view.`,
+        responses.push({
+          id: agent.id,
+          name: agent.name,
+          role: agent.role,
+          color: agent.color,
+          delta,
+          belief: round(newBelief),
+          resistance,
+          reasoning: (gen.reasoning || "").slice(0, 300)
+        });
+
+        return {
+          ...agent,
+          belief: newBelief,
+          lastDelta: delta,
+          resistance,
+          quote: (gen.line || agent.quote).slice(0, 200),
+          reasoning: (gen.reasoning || agent.reasoning).slice(0, 300)
+        };
       });
-      return { 
-        ...agent, 
-        belief: newBelief, 
-        lastDelta: changed, 
-        resistance: nextResistance,
-        reasoning: `${agent.name} stated their position, reinforcing their own view.`,
-      };
-    }
 
+      session.globalBelief = averageBelief(session.agents);
+      const spread = Math.max(...session.agents.map(a => a.belief)) - Math.min(...session.agents.map(a => a.belief));
+      const globalDelta = session.globalBelief - before;
+      updateMood(session, Math.abs(globalDelta), spread);
+
+      const worldReact = (parsed.worldReact || worldReaction(session, action, spread, globalDelta)).slice(0, 300);
+      session.ai = makeAiState({ provider: "k2think" });
+
+      session.log.unshift({
+        type: action.kind,
+        title: action.kind === "argument" ? "User argument"
+          : action.kind === "event" ? "Event injected"
+          : action.kind === "persuasion" ? "Targeted persuasion"
+          : "Room debate",
+        body: action.text,
+        targetId: action.targetId || null,
+        turn: session.turn,
+        globalDelta,
+        explanation: worldReact,
+        worldReact,
+        ai: session.ai,
+        responses: session.agents.map(a => ({
+          id: a.id,
+          name: a.name,
+          color: a.color,
+          line: a.quote,
+          delta: a.lastDelta,
+          belief: round(a.belief),
+          reasoning: a.reasoning
+        }))
+      });
+      session.history.push(snapshot(session, action.kind));
+      return session;
+
+    } catch (err) {
+      console.error("[K2Think] runTurn failed, falling back:", err.message);
+      session.ai = makeAiState({ provider: "fallback", error: err.message });
+    }
+  }
+
+  // Fallback: original heuristic math
+  const scores = scoreText(action.text);
+  const tilt = action.kind === "event"
+    ? clamp(textTilt(action.text) + 0.04, 0.12, 0.88)
+    : textTilt(action.text);
+  const weight = action.kind === "argument" ? 12 : action.kind === "event" ? 16 : 10;
+
+  session.agents = session.agents.map(agent => {
+    if (action.speakerId === agent.id) {
+      const newBelief = clamp(agent.belief + (agent.belief > 50 ? 0.4 : -0.4));
+      const delta = round(newBelief - agent.belief);
+      const resistance = clamp(agent.resistance - 1, 18, 86);
+      responses.push({ id: agent.id, name: agent.name, role: agent.role, color: agent.color, delta, belief: round(newBelief), resistance, reasoning: `${agent.name} stated their position, reinforcing their own view.` });
+      return { ...agent, belief: newBelief, lastDelta: delta, resistance, reasoning: `${agent.name} stated their position.` };
+    }
     const delta = applyInfluence(agent, scores, tilt, weight, action.kind, action.targetId);
     const newBelief = clamp(agent.belief + delta);
     const changed = round(newBelief - agent.belief);
-    const nextResistance = clamp(agent.resistance + (Math.abs(changed) > 6 ? 5 : -2), 18, 86);
+    const resistance = clamp(agent.resistance + (Math.abs(changed) > 6 ? 5 : -2), 18, 86);
     const reasoning = explainReason(agent, scores, changed, action.kind, action.targetId);
- 
-    responses.push({
-      id: agent.id,
-      name: agent.name,
-      role: agent.role,
-      color: agent.color,
-      delta: changed,
-      belief: round(newBelief),
-      resistance: nextResistance,
-      reasoning
-    });
-
-    return {
-      ...agent,
-      belief: newBelief,
-      lastDelta: changed,
-      resistance: nextResistance,
-      reasoning
-    };
+    responses.push({ id: agent.id, name: agent.name, role: agent.role, color: agent.color, delta: changed, belief: round(newBelief), resistance, reasoning });
+    return { ...agent, belief: newBelief, lastDelta: changed, resistance, reasoning };
   });
 
   session.globalBelief = averageBelief(session.agents);
-  const spread = Math.max(...session.agents.map((agent) => agent.belief)) - Math.min(...session.agents.map((agent) => agent.belief));
+  const spread = Math.max(...session.agents.map(a => a.belief)) - Math.min(...session.agents.map(a => a.belief));
   const globalDelta = session.globalBelief - before;
   updateMood(session, Math.abs(globalDelta), spread);
-
   const fallbackWorldReact = worldReaction(session, action, spread, globalDelta);
   const narrative = await generateNarrative(session, action, responses, fallbackWorldReact, globalDelta, spread);
-  const generatedById = new Map(narrative.agents.map((agent) => [agent.id, agent]));
-
-  session.agents = session.agents.map((agent) => {
-    const generated = generatedById.get(agent.id);
-    return generated
-      ? { ...agent, quote: generated.line, reasoning: generated.reasoning }
-      : agent;
+  const generatedById = new Map(narrative.agents.map(a => [a.id, a]));
+  session.agents = session.agents.map(agent => {
+    const gen = generatedById.get(agent.id);
+    return gen ? { ...agent, quote: gen.line, reasoning: gen.reasoning } : agent;
   });
-
-  const title = action.kind === "argument"
-    ? "User argument"
-    : action.kind === "event"
-      ? "Event injected"
-      : action.kind === "persuasion"
-        ? "Targeted persuasion"
-        : "Room debate";
 
   session.ai = narrative.ai;
   session.log.unshift({
     type: action.kind,
-    title,
+    title: action.kind === "argument" ? "User argument" : action.kind === "event" ? "Event injected" : action.kind === "persuasion" ? "Targeted persuasion" : "Room debate",
     body: action.text,
     targetId: action.targetId || null,
     turn: session.turn,
     globalDelta,
-    explanation: narrative.worldReact,
-    worldReact: narrative.worldReact,
+    explanation: fallbackWorldReact,
+    worldReact: fallbackWorldReact,
     ai: session.ai,
-    responses: session.agents.map((agent) => ({
-      id: agent.id,
-      name: agent.name,
-      color: agent.color,
-      line: agent.quote,
-      delta: agent.lastDelta,
-      belief: round(agent.belief),
-      reasoning: agent.reasoning
-    }))
+    responses: session.agents.map(a => ({ id: a.id, name: a.name, color: a.color, line: a.quote, delta: a.lastDelta, belief: round(a.belief), reasoning: a.reasoning }))
   });
-  session.history.push(snapshot(session, title));
+  session.history.push(snapshot(session, action.kind));
   return session;
-}
-
-function buildDebateArgument(speaker, stance, topic) {
-  const topDimensions = Object.entries(speaker.trust)
-    .sort((a, b) => b[1]-a[1])
-    .slice(0, 2)
-    .map(([dim]) => dim);
-
-    const dimensionPhrases = {
-    evidence:   stance === "support"
-      ? `Research and data support action on ${topic}.`
-      : `The evidence on ${topic} is weak and contested.`,
-    rights:     stance === "support"
-      ? `This is fundamentally about equal rights and human dignity.`
-      : `This threatens individual freedom and causes real harm.`,
-    stability:  stance === "support"
-      ? `The cost of inaction on ${topic} outweighs the risk of change.`
-      : `The disruption to jobs and family stability is too high a price.`,
-    authority:  stance === "support"
-      ? `Institutions and policy experts broadly support this direction.`
-      : `Government overreach and regulatory costs are real concerns here.`,
-    popularity: stance === "support"
-      ? `Public support for this is growing and the movement is real.`
-      : `The backlash against this in the public is being ignored.`,
-    };
-    return topDimensions.map(dim => dimensionPhrases[dim]).join(" ");
 }
 
 async function debateStep(session) {
@@ -727,20 +592,15 @@ async function debateStep(session) {
   }));
   const average = session.globalBelief;
   const speaker = session.agents.reduce((most, agent) =>
-    Math.abs(agent.belief - average) >
-    Math.abs(most.belief - average) ? agent : most
+    Math.abs(agent.belief - average) > Math.abs(most.belief - average) ? agent : most
   );
-
   const stance = speaker.belief > 50 ? "support" : "oppose";
-  const syntheticText = buildDebateArgument(speaker, stance, session.topic);
-
-  const action = {
+  return runTurn(session, {
     kind: "debate",
-    text: syntheticText,
+    text: `${speaker.name} (${speaker.role}) speaks to ${stance} the position on ${session.topic}.`,
     targetId: null,
-    speakerId: speaker.id,
-  };
-  return runTurn(session, action);
+    speakerId: speaker.id
+  });
 }
 
 function sendJson(res, status, payload) {
