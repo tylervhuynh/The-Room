@@ -41,36 +41,15 @@ export default function CenterPanel({ session, error }) {
     <div className="center-panel">
       <div className="agents-header">
         <div className="agents-heading">
-          <div className="panel-label">Ambient chamber</div>
+          <div className="panel-label">Debate chamber</div>
           <h2>The Room</h2>
         </div>
         <span className="turn-badge">Turn {session?.turn ?? 0}</span>
       </div>
 
       <div className="room-stage">
-        <div className="room-focus">
-          <div className="room-kicker">Current idea</div>
-          <h3>{session?.topic || 'AI regulation'}</h3>
-          <p>{error || session?.log?.[0]?.worldReact || 'Four perspectives drift around one idea and keep updating as new pressure lands.'}</p>
-        </div>
-
         <div className="agents-grid">
           {session?.agents?.map((agent) => <AgentOrb key={agent.id} agent={agent} />)}
-        </div>
-
-        <div className="room-footer">
-          <div className="room-stat">
-            <span className="room-stat-label">Room consensus</span>
-            <strong>{session ? `${session.globalBelief}%` : '—'}</strong>
-          </div>
-          <div className="room-stat">
-            <span className="room-stat-label">Current mood</span>
-            <strong>{formatMood(session?.mood)}</strong>
-          </div>
-          <div className="room-stat">
-            <span className="room-stat-label">Voice engine</span>
-            <strong>{session?.ai?.provider === 'k2think' ? 'K2 Think' : 'Fallback'}</strong>
-          </div>
         </div>
       </div>
 

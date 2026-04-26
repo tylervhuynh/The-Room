@@ -1,28 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 export default function Header({ onStart, topic, busy }) {
-  const [value, setValue] = useState(topic || 'AI regulation')
-
-  useEffect(() => {
-    setValue(topic || 'AI regulation')
-  }, [topic])
+  const [value, setValue] = useState("")
+  const inputRef = useRef()
 
   function handleSubmit(event) {
     event.preventDefault()
-    onStart(value.trim() || 'AI regulation')
+    onStart(value.trim())
+
+    setValue("")
+    inputRef.current.blur();
   }
 
   return (
     <header className="header">
       <div className="logo">
         <div className="logo-mark">The Room</div>
-        <div className="logo-sub">currently debating: {topic || 'AI regulation'}</div>
+        {topic && <div className="logo-sub">currently debating: {topic}</div>}
       </div>
       <form className="topic-form" onSubmit={handleSubmit}>
         <input
           maxLength={80}
           value={value}
           onChange={(event) => setValue(event.target.value)}
+          ref={inputRef}
           placeholder="What idea should enter the room?"
           autoComplete="off"
           disabled={busy}

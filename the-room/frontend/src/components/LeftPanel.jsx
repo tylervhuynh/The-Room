@@ -5,57 +5,8 @@ function formatMood(mood) {
   return mood ? mood.charAt(0).toUpperCase() + mood.slice(1) : 'Waiting'
 }
 
-function drawChart(canvas, history) {
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  const W = canvas.width
-  const H = canvas.height
-  ctx.clearRect(0, 0, W, H)
-  ctx.fillStyle = '#14171d'
-  ctx.fillRect(0, 0, W, H)
-  if (!history?.length || history.length < 2) return
-
-  const agentIds = ['activist', 'traditionalist', 'observer', 'authority']
-  const agentColors = { activist: '#e8503a', traditionalist: '#c4894a', observer: '#4a8fd4', authority: '#5fa86b' }
-
-  for (const id of agentIds) {
-    ctx.strokeStyle = `${agentColors[id]}66`
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    history.forEach((point, index) => {
-      const x = 8 + (index / (history.length - 1)) * (W - 16)
-      const belief = (point.agents && point.agents[id]) ?? (point.vals && point.vals[id]) ?? 0
-      const y = H - 6 - (belief / 100) * (H - 12)
-      index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-    })
-    ctx.stroke()
-  }
-
-  ctx.strokeStyle = '#e8503a'
-  ctx.lineWidth = 2.5
-  ctx.beginPath()
-  history.forEach((point, index) => {
-    const x = 8 + (index / (history.length - 1)) * (W - 16)
-    const belief = point.globalBelief ?? point.gb ?? 0
-    const y = H - 6 - (belief / 100) * (H - 12)
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-  })
-  ctx.stroke()
-
-  const last = history[history.length - 1]
-  const lastBelief = last.globalBelief ?? last.gb ?? 0
-  ctx.fillStyle = '#e8503a'
-  ctx.beginPath()
-  ctx.arc(W - 8, H - 6 - (lastBelief / 100) * (H - 12), 3, 0, Math.PI * 2)
-  ctx.fill()
-}
-
 export default function LeftPanel({ session, onStep, busy }) {
   const canvasRef = useRef(null)
-
-  useEffect(() => {
-    drawChart(canvasRef.current, session?.history || [])
-  }, [session])
 
   return (
     <aside className="panel-left">
@@ -69,11 +20,6 @@ export default function LeftPanel({ session, onStep, busy }) {
           <span className="mood-dot" style={{ background: MOOD_COLORS[session?.mood] || '#888' }} />
           <span>{formatMood(session?.mood)}</span>
         </div>
-      </div>
-
-      <div className="chart-wrap">
-        <div className="panel-label">Pressure trace</div>
-        <canvas ref={canvasRef} width={248} height={100} />
       </div>
 
       <button className="btn-debate" onClick={onStep} disabled={!session || busy}>

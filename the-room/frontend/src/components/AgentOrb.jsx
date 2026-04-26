@@ -1,8 +1,17 @@
+import { useState, useEffect } from 'react'
 import { alphaColor, ORB_LAYOUT, rnd } from '../gameLogic'
 
 export default function AgentOrb({ agent }) {
+  const [width, setWidth] = useState(window.innerWidth)
   const layout = ORB_LAYOUT[agent.id] || ORB_LAYOUT.activist
   const deltaClass = agent.lastDelta > 0 ? 'pos' : agent.lastDelta < 0 ? 'neg' : ''
+  const flipLeft = agent.id === 'observer' || agent.id === 'authority'
+  
+  useEffect( () => {
+    const handleResize = () => setWidth(window.innerWidth)
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   return (
     <div
@@ -30,7 +39,24 @@ export default function AgentOrb({ agent }) {
           <span>resistance {rnd(agent.resistance)}%</span>
         </div>
       </div>
-      <div className="agent-whisper">"{agent.quote}"</div>
+      <div 
+        className={width <= 900 ? "agent-whisper" : "hover-box"}
+        style={width > 900 ? {
+          boxShadow: `0 10px 30px ${agent.color}`,
+          ...(flipLeft ? { left: 'auto', right: '105%' } : {})
+        } : {}}
+      >
+        {width <= 900 ? (
+          <span>"{agent.quote}"</span>
+        ) : (
+          <>
+            <div className="hover-box-name" style={{ color: agent.color }}>{agent.name}</div>
+            <div className="hover-box-row" style={{ marginTop: 6, borderTop: '1px solid var(--border2)', paddingTop: 6 }}>
+              <span className="hover-box-row-label" style={{ fontStyle: 'italic' }}>"{agent.quote}"</span>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
