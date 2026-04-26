@@ -61,36 +61,36 @@ const agentBlueprints = [
     id: "activist",
     name: "Activist",
     role: "Pushes for collective action and systemic change.",
-    base: 78,
-    volatility: 1.6,
-    trust: { evidence: 0.7, rights: 1.7, stability: 0.2, authority: 0.4, popularity: 1.3 },
+    base: 76,
+    volatility: 1.22,
+    trust: { evidence: 0.7, rights: 1.25, stability: 0.35, authority: 0.4, popularity: 1.1 },
     color: "#c84f6a"
   },
   {
     id: "traditionalist",
     name: "Traditionalist",
     role: "Defends existing foundations and warns of unintended consequences.",
-    base: 28,
-    volatility: 0.65,
-    trust: { evidence: 0.6, rights: 0.3, stability: 1.8, authority: 1.2, popularity: 0.4 },
+    base: 34,
+    volatility: 0.74,
+    trust: { evidence: 0.6, rights: 0.35, stability: 1.28, authority: 1.1, popularity: 0.5 },
     color: "#c4794a"
   },
   {
     id: "observer",
     name: "Neutral Observer",
     role: "Converses through data, logic, and objectivity.",
-    base: 50,
-    volatility: 1.1,
-    trust: { evidence: 1.9, rights: 0.7, stability: 0.8, authority: 0.6, popularity: 0.3 },
+    base: 52,
+    volatility: 0.90,
+    trust: { evidence: 1.20, rights: 0.7, stability: 0.8, authority: 0.6, popularity: 0.45 },
     color: "#4a7fd4"
   },
   {
     id: "authority",
     name: "Politician",
     role: "Navigates consensus, optics, and institutional viability.",
-    base: 52,
-    volatility: 0.9,
-    trust: { evidence: 0.8, rights: 0.7, stability: 1.0, authority: 1.5, popularity: 1.4 },
+    base: 48,
+    volatility: 0.82,
+    trust: { evidence: 0.8, rights: 0.55, stability: 1.0, authority: 1.15, popularity: 1.2 },
     color: "#4fa878"
   }
 ];
