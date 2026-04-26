@@ -12,8 +12,8 @@ export const PLACEHOLDERS = {
 
 export const ORB_LAYOUT = {
   activist: { x: '9%', y: '10%', size: 'clamp(170px,18vw,214px)', duration: '10.5s', delay: '-1.4s' },
-  observer: { x: '69%', y: '9%', size: 'clamp(166px,17vw,210px)', duration: '11.8s', delay: '-3.8s' },
-  traditionalist: { x: '10%', y: '56%', size: 'clamp(168px,18vw,212px)', duration: '12.4s', delay: '-6.1s' },
+  traditionalist: { x: '69%', y: '9%', size: 'clamp(166px,17vw,210px)', duration: '11.8s', delay: '-3.8s' },
+  observer: { x: '10%', y: '56%', size: 'clamp(168px,18vw,212px)', duration: '12.4s', delay: '-6.1s' },
   authority: { x: '68%', y: '55%', size: 'clamp(164px,17vw,206px)', duration: '10.9s', delay: '-2.6s' },
 }
 

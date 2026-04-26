@@ -60,41 +60,40 @@ const agentBlueprints = [
   {
     id: "activist",
     name: "Activist",
-    role: "Pushes moral urgency and collective action.",
-    base: 76,
-    volatility: 1.22,
-    trust: { evidence: 0.9, rights: 1.25, stability: 0.35, authority: 0.45, popularity: 0.72 },
+    role: "Pushes for collective action and systemic change.",
+    base: 78,
+    volatility: 1.6,
+    trust: { evidence: 0.7, rights: 1.7, stability: 0.2, authority: 0.4, popularity: 1.3 },
     color: "#c84f6a"
   },
   {
     id: "traditionalist",
     name: "Traditionalist",
-    role: "Defends continuity, caution, and social costs.",
-    base: 34,
-    volatility: 0.74,
-    trust: { evidence: 0.62, rights: 0.35, stability: 1.28, authority: 0.82, popularity: 0.5 },
+    role: "Defends existing foundations and warns of unintended consequences.",
+    base: 28,
+    volatility: 0.65,
+    trust: { evidence: 0.6, rights: 0.3, stability: 1.8, authority: 1.2, popularity: 0.4 },
     color: "#c4794a"
   },
   {
     id: "observer",
-    name: "Neutral observer",
-    role: "Tracks evidence, uncertainty, and second-order effects.",
-    base: 52,
-    volatility: 0.9,
-    trust: { evidence: 1.2, rights: 0.72, stability: 0.72, authority: 0.66, popularity: 0.45 },
+    name: "Neutral Observer",
+    role: "Converses through data, logic, and objectivity.",
+    base: 50,
+    volatility: 1.1,
+    trust: { evidence: 1.9, rights: 0.7, stability: 0.8, authority: 0.6, popularity: 0.3 },
     color: "#4a7fd4"
   },
   {
     id: "authority",
-    name: "Authority figure",
-    role: "Balances legitimacy, institutions, and public pressure.",
-    base: 48,
-    volatility: 0.82,
-    trust: { evidence: 0.95, rights: 0.55, stability: 0.92, authority: 1.15, popularity: 0.9 },
+    name: "Politician",
+    role: "Navigates consensus, optics, and institutional viability.",
+    base: 52,
+    volatility: 0.9,
+    trust: { evidence: 0.8, rights: 0.7, stability: 1.0, authority: 1.5, popularity: 1.4 },
     color: "#4fa878"
   }
 ];
-
 
 const dimensions = {
   evidence: ["study", "data", "proof", "research", "expert", "science", "scientific", "measurable", "record"],
@@ -596,12 +595,36 @@ async function runTurn(session, action) {
   const responses = [];
 
   session.agents = session.agents.map((agent, index) => {
+    if(action.speakerId === agent.id) {
+      const newBelief = clamp(agent.belief + (agent.belief > 50 ? .4 : -.4));
+      const changed = round(newBelief - agent.belief);
+      const nextResistance = clamp(agent.resistance - 1, 18, 86);
+
+      responses.push({
+        id:         agent.id,
+        name:       agent.name,
+        role:       agent.role,
+        color:      agent.color,
+        delta:      changed,
+        belief:     round(newBelief),
+        resistance: nextResistance,
+        reasoning:  `${agent.name} stated their position, reinforcing their own view.`,
+      });
+      return { 
+        ...agent, 
+        belief: newBelief, 
+        lastDelta: changed, 
+        resistance: nextResistance,
+        reasoning: `${agent.name} stated their position, reinforcing their own view.`,
+      };
+    }
+
     const delta = applyInfluence(agent, scores, tilt, weight, action.kind, action.targetId);
     const newBelief = clamp(agent.belief + delta);
     const changed = round(newBelief - agent.belief);
     const nextResistance = clamp(agent.resistance + (Math.abs(changed) > 6 ? 5 : -2), 18, 86);
     const reasoning = explainReason(agent, scores, changed, action.kind, action.targetId);
-
+ 
     responses.push({
       id: agent.id,
       name: agent.name,
@@ -671,13 +694,51 @@ async function runTurn(session, action) {
   return session;
 }
 
+function buildDebateArgument(speaker, stance, topic) {
+  const topDimensions = Object.entries(speaker.trust)
+    .sort((a, b) => b[1]-a[1])
+    .slice(0, 2)
+    .map(([dim]) => dim);
+
+    const dimensionPhrases = {
+    evidence:   stance === "support"
+      ? `Research and data support action on ${topic}.`
+      : `The evidence on ${topic} is weak and contested.`,
+    rights:     stance === "support"
+      ? `This is fundamentally about equal rights and human dignity.`
+      : `This threatens individual freedom and causes real harm.`,
+    stability:  stance === "support"
+      ? `The cost of inaction on ${topic} outweighs the risk of change.`
+      : `The disruption to jobs and family stability is too high a price.`,
+    authority:  stance === "support"
+      ? `Institutions and policy experts broadly support this direction.`
+      : `Government overreach and regulatory costs are real concerns here.`,
+    popularity: stance === "support"
+      ? `Public support for this is growing and the movement is real.`
+      : `The backlash against this in the public is being ignored.`,
+    };
+    return topDimensions.map(dim => dimensionPhrases[dim]).join(" ");
+}
+
 async function debateStep(session) {
+  session.agents = session.agents.map(a => ({
+    ...a,
+    resistance: clamp(a.resistance - 3, 18, 86)
+  }));
   const average = session.globalBelief;
+  const speaker = session.agents.reduce((most, agent) =>
+    Math.abs(agent.belief - average) >
+    Math.abs(most.belief - average) ? agent : most
+  );
+
+  const stance = speaker.belief > 50 ? "support" : "oppose";
+  const syntheticText = buildDebateArgument(speaker, stance, session.topic);
+
   const action = {
     kind: "debate",
-    text: average > 55
-      ? "The conversation absorbs recent pressure and tests whether support can become consensus."
-      : "The conversation probes uncertainty, risk, and whether the case for change is durable."
+    text: syntheticText,
+    targetId: null,
+    speakerId: speaker.id,
   };
   return runTurn(session, action);
 }
