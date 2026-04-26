@@ -19,7 +19,7 @@ export default defineConfig({
   // In production: build directly into the public/ folder that server.js serves
   // Run `npm run build` from my-app/, then start server.js — everything works
   build: {
-    outDir: '../public',
+    outDir: '../backend/public',
     emptyOutDir: true,
   },
 })
