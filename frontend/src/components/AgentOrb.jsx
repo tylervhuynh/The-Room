@@ -52,7 +52,7 @@ export default function AgentOrb({ agent }) {
         ) : (
           <>
             <div className="hover-box-name" style={{ color: agent.color }}>{agent.name}</div>
-            <div className="hover-box-role">{console.log(Object.keys(agent))}{agent.role  ?? 'undefined'}</div>
+            <div className="hover-box-role">{agent.role  ?? 'undefined'}</div>
             <div className="hover-box-row" style={{ marginTop: 6, borderTop: '1px solid var(--border2)', paddingTop: 6 }}>
               <span className="hover-box-row-label" style={{ fontStyle: 'italic' }}>"{agent.quote}"</span>
             </div>
