@@ -13,7 +13,7 @@ export default function App() {
   async function handleStart(topic) {
     setBusy(true)
     try {
-      const nextSession = await api('/api/session', { topic: topic || 'AI regulation' })
+      const nextSession = await api('/api/session', { topic: topic })
       setSession(nextSession)
       setError('')
     } catch (err) {
@@ -52,12 +52,12 @@ export default function App() {
   }
 
   useEffect(() => {
-    handleStart('AI regulation')
+    handleStart('')
   }, [])
 
   return (
     <div id="app">
-      <Header onStart={handleStart} topic={session?.topic || 'AI regulation'} busy={busy} />
+      <Header onStart={handleStart} topic={session?.topic} busy={busy} />
       <div className="main">
         <LeftPanel session={session} onStep={handleStep} busy={busy} />
         <CenterPanel session={session} error={error} />

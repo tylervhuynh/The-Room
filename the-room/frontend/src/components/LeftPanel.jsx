@@ -11,12 +11,12 @@ function drawChart(canvas, history) {
   const W = canvas.width
   const H = canvas.height
   ctx.clearRect(0, 0, W, H)
-  ctx.fillStyle = '#14171d'
+  ctx.fillStyle = '#0f0f1a'
   ctx.fillRect(0, 0, W, H)
   if (!history?.length || history.length < 2) return
 
   const agentIds = ['activist', 'traditionalist', 'observer', 'authority']
-  const agentColors = { activist: '#e8503a', traditionalist: '#c4894a', observer: '#4a8fd4', authority: '#5fa86b' }
+  const agentColors = { activist: '#c84f6a', traditionalist: '#c4794a', observer: '#4a7fd4', authority: '#4fa878' }
 
   for (const id of agentIds) {
     ctx.strokeStyle = `${agentColors[id]}66`

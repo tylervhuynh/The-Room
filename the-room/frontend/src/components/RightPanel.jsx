@@ -32,7 +32,6 @@ export default function RightPanel({ session, onIntervene, busy, error }) {
     <aside className="panel-right">
       <div className="intervention-panel">
         <div className="panel-label" style={{ marginBottom: 10 }}>You enter as the fifth voice</div>
-
         <div className="tabs">
           {['argument', 'event', 'persuasion'].map((value) => (
             <button
@@ -81,6 +80,11 @@ export default function RightPanel({ session, onIntervene, busy, error }) {
           <div className="hint-icon">{error ? '!' : hint.icon}</div>
           {error || hint.text}
         </div>
+      </div>
+      <div className="current-idea-box">
+        <div className="current-idea-kicker">Current topic</div>
+        <div className="current-idea-topic" id="roomTopic">{session?.topic}</div>
+        <div className="current-idea-summary" id="roomSummary">Four perspectives drift around one idea and keep updating as new pressure lands.</div>
       </div>
     </aside>
   )

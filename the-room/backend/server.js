@@ -64,16 +64,16 @@ const agentBlueprints = [
     base: 76,
     volatility: 1.22,
     trust: { evidence: 0.9, rights: 1.25, stability: 0.35, authority: 0.45, popularity: 0.72 },
-    color: "#e5484d"
+    color: "#c84f6a"
   },
   {
     id: "traditionalist",
-    name: "Traditionalist / skeptic",
+    name: "Traditionalist",
     role: "Defends continuity, caution, and social costs.",
     base: 34,
     volatility: 0.74,
     trust: { evidence: 0.62, rights: 0.35, stability: 1.28, authority: 0.82, popularity: 0.5 },
-    color: "#9b6a2f"
+    color: "#c4794a"
   },
   {
     id: "observer",
@@ -82,7 +82,7 @@ const agentBlueprints = [
     base: 52,
     volatility: 0.9,
     trust: { evidence: 1.2, rights: 0.72, stability: 0.72, authority: 0.66, popularity: 0.45 },
-    color: "#2f7dbd"
+    color: "#4a7fd4"
   },
   {
     id: "authority",
@@ -91,7 +91,7 @@ const agentBlueprints = [
     base: 48,
     volatility: 0.82,
     trust: { evidence: 0.95, rights: 0.55, stability: 0.92, authority: 1.15, popularity: 0.9 },
-    color: "#61724b"
+    color: "#4fa878"
   }
 ];
 
