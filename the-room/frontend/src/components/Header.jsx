@@ -4,10 +4,6 @@ export default function Header({ onStart, topic, busy }) {
   const [value, setValue] = useState("")
   const inputRef = useRef()
 
-  // useEffect(() => {
-  //   setValue(topic || "")
-  // }, [topic])
-
   function handleSubmit(event) {
     event.preventDefault()
     onStart(value.trim())
